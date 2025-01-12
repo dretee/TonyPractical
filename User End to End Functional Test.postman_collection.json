@@ -1,0 +1,505 @@
+{
+	"info": {
+		"_postman_id": "f1439a65-f2ff-4cf0-ad66-2f9c66c63a0f",
+		"name": "User End to End Functional Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27529247",
+		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/CI-CD-API-DEMO~0d280c2e-e8ac-452b-8e21-9bce53e2f446/collection/27529247-f1439a65-f2ff-4cf0-ad66-2f9c66c63a0f?action=share&source=collection_link&creator=27529247"
+	},
+	"item": [
+		{
+			"name": "End to End Functional test",
+			"item": [
+				{
+					"name": "Sign Up Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json();\r",
+									"pm.collectionVariables.set(\"User_id\", jsondata.user._id);\r",
+									"pm.collectionVariables.set(\"Fristname\", jsondata.user.firstName);\r",
+									"pm.collectionVariables.set(\"Lastname\", jsondata.user.lastName);\r",
+									"pm.collectionVariables.set(\"Useremail\", jsondata.user.email);\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 201\", () => {\r",
+									"    pm.expect(pm.response.code).eql(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomLastName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"password\": \"myPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/users",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/users' \\\r\n--header 'Authorization: Bearer {{token}}' \\\r\n--data-raw '{\r\n    \"firstName\": \"Test\",\r\n    \"lastName\": \"User\",\r\n    \"email\": \"test@fake.com\",\r\n    \"password\": \"myPassword\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Users login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json()\r",
+									"pm.environment.set(\"access_token\", jsondata.token)\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the details of the user is correct\", () => {\r",
+									"pm.expect(jsondata.user.firstName).is.eql(pm.collectionVariables.get(\"Fristname\"));\r",
+									"pm.expect(jsondata.user.lastName).is.eql(pm.collectionVariables.get(\"Lastname\"));\r",
+									"pm.expect(jsondata.user.email).is.eql(pm.collectionVariables.get(\"Useremail\"));\r",
+									"pm.expect(jsondata.user._id).is.eql(pm.collectionVariables.get(\"User_id\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"const Useremail = pm.collectionVariables.get(\"Useremail\")"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{Useremail}}\",\r\n    \"password\": \"myPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/users/login",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/users/login' \\\r\n--data-raw '{\r\n    \"email\": \"test2@fake.com\",\r\n    \"password\": \"myNewPassword\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Update user profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json()\r",
+									"\r",
+									"\r",
+									"pm.test(\"Checking the change on the last name\", () =>{\r",
+									"pm.expect(jsondata.lastName).is.not.eql(pm.collectionVariables.get(\"Lastname\"));\r",
+									"pm.collectionVariables.set(\"Current_last_name\", jsondata.lastName)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Checking the change of the first name\", () =>{\r",
+									"pm.expect(jsondata.firstName).is.not.eql(pm.collectionVariables.get(\"Firstname\"));\r",
+									"pm.collectionVariables.set(\"Current_first_name\", jsondata.firstName)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the details of the user is correct\", () => {\r",
+									"pm.expect(jsondata.email).is.eql(pm.collectionVariables.get(\"Useremail\"))\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomUserName}}\",\r\n    \"email\": \"{{Useremail}}\",\r\n    \"password\": \"myPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/users/me",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request PATCH 'https://thinking-tester-contact-list.herokuapp.com/users/me' \\\r\n--header 'Authorization: Bearer {{token}}' \\\r\n--data-raw '{\r\n    \"firstName\": \"Updated\",\r\n    \"lastName\": \"Username\",\r\n    \"email\": \"test2@fake.com\",\r\n    \"password\": \"myNewPassword\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get user profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json()\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the details of the user is correct after the update\", () => {\r",
+									"pm.expect(jsondata.firstName).is.eql(pm.collectionVariables.get(\"Current_first_name\"));\r",
+									"pm.expect(jsondata.lastName).is.eql(pm.collectionVariables.get(\"Current_last_name\"));\r",
+									"pm.expect(jsondata.email).is.eql(pm.collectionVariables.get(\"Useremail\"));\r",
+									"pm.expect(jsondata._id).is.eql(pm.collectionVariables.get(\"User_id\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/users/me",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/users/me' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.unset(\"Current_first_name\");\r",
+									"pm.collectionVariables.unset(\"Current_last_name\");\r",
+									"pm.collectionVariables.unset(\"Fristname\");\r",
+									"pm.collectionVariables.unset(\"Lastname\")\r",
+									"pm.collectionVariables.unset(\"User_id\")\r",
+									"pm.collectionVariables.unset(\"Current_first_name\")\r",
+									"pm.environment.unset(\"access_token\")\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/users/logout",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request POST 'https://thinking-tester-contact-list.herokuapp.com/users/logout' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Update user profile Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json()\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 401\", () => {\r",
+									"    pm.expect(pm.response.code).eql(401);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomUserName}}\",\r\n    \"email\": \"{{Useremail}}\",\r\n    \"password\": \"myPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/users/me",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request PATCH 'https://thinking-tester-contact-list.herokuapp.com/users/me' \\\r\n--header 'Authorization: Bearer {{token}}' \\\r\n--data-raw '{\r\n    \"firstName\": \"Updated\",\r\n    \"lastName\": \"Username\",\r\n    \"email\": \"test2@fake.com\",\r\n    \"password\": \"myNewPassword\"\r\n}'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Testing the Deleting a user",
+			"item": [
+				{
+					"name": "Users login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json()\r",
+									"pm.environment.set(\"access_token\", jsondata.token)\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the details of the user is correct\", () => {\r",
+									"pm.expect(jsondata.user.firstName).is.eql(pm.collectionVariables.get(\"Fristname\"));\r",
+									"pm.expect(jsondata.user.lastName).is.eql(pm.collectionVariables.get(\"Lastname\"));\r",
+									"pm.expect(jsondata.user.email).is.eql(pm.collectionVariables.get(\"Useremail\"));\r",
+									"pm.expect(jsondata.user._id).is.eql(pm.collectionVariables.get(\"User_id\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"const Useremail = pm.collectionVariables.get(\"Useremail\")"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{Useremail}}\",\r\n    \"password\": \"myPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/users/login",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/users/login' \\\r\n--data-raw '{\r\n    \"email\": \"test2@fake.com\",\r\n    \"password\": \"myNewPassword\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"pm.collectionVariables.unset(\"Useremail\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/users/me",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request DELETE 'https://thinking-tester-contact-list.herokuapp.com/users/me' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

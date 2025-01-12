@@ -1,0 +1,718 @@
+{
+	"info": {
+		"_postman_id": "97f329c0-7623-41aa-8bb9-b566b8140519",
+		"name": "Contacts End to End Functional Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "27529247",
+		"_collection_link": "https://interstellar-spaceship-717495.postman.co/workspace/CI-CD-API-DEMO~0d280c2e-e8ac-452b-8e21-9bce53e2f446/collection/27529247-97f329c0-7623-41aa-8bb9-b566b8140519?action=share&source=collection_link&creator=27529247"
+	},
+	"item": [
+		{
+			"name": "Functional Test for contact end point",
+			"item": [
+				{
+					"name": "Sign Up Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json();\r",
+									"pm.collectionVariables.set(\"User_id\", jsondata.user._id);\r",
+									"pm.collectionVariables.set(\"Fristname\", jsondata.user.firstName);\r",
+									"pm.collectionVariables.set(\"Lastname\", jsondata.user.lastName);\r",
+									"pm.collectionVariables.set(\"Useremail\", jsondata.user.email);\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 201\", () => {\r",
+									"    pm.expect(pm.response.code).eql(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomLastName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"password\": \"myPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/users",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/users' \\\r\n--header 'Authorization: Bearer {{token}}' \\\r\n--data-raw '{\r\n    \"firstName\": \"Test\",\r\n    \"lastName\": \"User\",\r\n    \"email\": \"test@fake.com\",\r\n    \"password\": \"myPassword\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Users login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsondata = pm.response.json()\r",
+									"pm.environment.set(\"access_token\", jsondata.token)\r",
+									"\r",
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the details of the user is correct\", () => {\r",
+									"pm.expect(jsondata.user.firstName).is.eql(pm.collectionVariables.get(\"Fristname\"));\r",
+									"pm.expect(jsondata.user.lastName).is.eql(pm.collectionVariables.get(\"Lastname\"));\r",
+									"pm.expect(jsondata.user.email).is.eql(pm.collectionVariables.get(\"Useremail\"));\r",
+									"pm.expect(jsondata.user._id).is.eql(pm.collectionVariables.get(\"User_id\"));\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"const Useremail = pm.collectionVariables.get(\"Useremail\")"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"{{Useremail}}\",\r\n    \"password\": \"myPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/users/login",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/users/login' \\\r\n--data-raw '{\r\n    \"email\": \"test2@fake.com\",\r\n    \"password\": \"myNewPassword\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Create contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response JSON and store it in the variable jsondata\r",
+									"var jsondata = pm.response.json();\r",
+									"\r",
+									"// Set the 'customer_user_id' in collection variables to store the user's _id from the response\r",
+									"pm.collectionVariables.set(\"customer_user_id\", jsondata._id);\r",
+									"\r",
+									"// Set the 'Fristname' in collection variables to store the first name from the response\r",
+									"pm.collectionVariables.set(\"Fristname\", jsondata.firstName);\r",
+									"\r",
+									"// Set the 'Lastname' in collection variables to store the last name from the response\r",
+									"pm.collectionVariables.set(\"Lastname\", jsondata.lastName);\r",
+									"\r",
+									"// Set the 'Useremail' in collection variables to store the email from the response\r",
+									"pm.collectionVariables.set(\"Useremail\", jsondata.email);\r",
+									"\r",
+									"// Set the 'country' in collection variables to store the country from the response\r",
+									"pm.collectionVariables.set(\"country\", jsondata.country);\r",
+									"\r",
+									"// Set the 'country' in collection variables to store the country from the response\r",
+									"pm.collectionVariables.set(\"city\", jsondata.city);\r",
+									"\r",
+									"// Set the 'country' in collection variables to store the country from the response\r",
+									"pm.collectionVariables.set(\"postalCode\", jsondata.postalCode);\r",
+									"\r",
+									"// Set the 'phone_number' in collection variables to store the phone number from the response\r",
+									"pm.collectionVariables.set(\"phone_number\", jsondata.phone);\r",
+									"\r",
+									"// Test to verify that the status code of the response is 201 (Created)\r",
+									"pm.test(\"Verifying that the status code is 201\", () => {\r",
+									"    pm.expect(pm.response.code).eql(201);\r",
+									"});\r",
+									"\r",
+									"// Test to verify that the response time is within the acceptable limit (less than 1000 ms)\r",
+									"pm.test(\"Verifying the response is within the time limit\", () => {\r",
+									"    pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"// Test to verify the 'owner' field in the response matches the 'User_id' stored in collection variables\r",
+									"pm.test(\"Verifying the id of the user\", () => {\r",
+									"    pm.expect(jsondata.owner).is.equal(pm.collectionVariables.get(\"User_id\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomLastName}}\",\r\n    \"birthdate\": \"1970-01-01\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"phone\": \"{{$randomPhoneNumber}}\",\r\n    \"street1\": \"1 Main St.\",\r\n    \"street2\": \"Apartment A\",\r\n    \"city\": \"Anytown\",\r\n    \"stateProvince\": \"KS\",\r\n    \"postalCode\": \"12345\",\r\n    \"country\": \"{{$randomCountry}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/contacts",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"contacts"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/contacts' \\\r\n--header 'Authorization: Bearer {{token}}' \\\r\n--data-raw '{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"birthdate\": \"1970-01-01\",\r\n    \"email\": \"jdoe@fake.com\",\r\n    \"phone\": \"8005555555\",\r\n    \"street1\": \"1 Main St.\",\r\n    \"street2\": \"Apartment A\",\r\n    \"city\": \"Anytown\",\r\n    \"stateProvince\": \"KS\",\r\n    \"postalCode\": \"12345\",\r\n    \"country\": \"USA\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get all contacts list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response JSON and store it in the variable jsondata\r",
+									"var jsondata = pm.response.json()\r",
+									"\r",
+									"// Get the length of the parsed JSON array and store it in a variable\r",
+									"var lenght_of_list = jsondata.length;\r",
+									"\r",
+									"// Store the length of the list in a collection variable for later use\r",
+									"pm.collectionVariables.set(\"lenght_of_list\", lenght_of_list);\r",
+									"\r",
+									"// Log the length of the list to the console for debugging\r",
+									"console.log(lenght_of_list);\r",
+									"\r",
+									"// Calculate the index of the newly added contact, assuming it's the last one in the list\r",
+									"const index_of_new_contact = lenght_of_list - 1;\r",
+									"\r",
+									"// Test to verify the status code of the response is 200 (success)\r",
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"// Test to verify that the response time is within the acceptable limit (less than 1000 ms)\r",
+									"pm.test(\"Verifying the response is within the time limit\", () => {\r",
+									"    pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"// Test to verify the 'owner' field matches the 'User_id' stored in collection variables\r",
+									"pm.test(\"Verifying the id of the user\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].owner).is.equal(pm.collectionVariables.get(\"User_id\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the first name of the newly added contact matches the expected first name\r",
+									"pm.test(\"Verify that the first name of the added new contact is correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].firstName).is.equal(pm.collectionVariables.get(\"Fristname\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the last name of the newly added contact matches the expected last name\r",
+									"pm.test(\"Verify that the last name of the added new contact is correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].lastName).is.equal(pm.collectionVariables.get(\"Lastname\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the email and phone number of the newly added contact match the expected values\r",
+									"pm.test(\"Verify that the email and phone number of the added new contact are correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].email).is.equal(pm.collectionVariables.get(\"Useremail\"));\r",
+									"    pm.expect(jsondata[index_of_new_contact].phone).is.equal(pm.collectionVariables.get(\"phone_number\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the country of the newly added contact matches the expected country\r",
+									"pm.test(\"Verify that the country of the added new contact is correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].country).is.equal(pm.collectionVariables.get(\"country\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the customer ID (_id) of the last added contact matches the expected customer user ID\r",
+									"pm.test(\"Verifying the customer Id on the contact in the last\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact]._id).is.equal(pm.collectionVariables.get(\"customer_user_id\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/contacts",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"contacts"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/contacts' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parse the response JSON and store it in the variable jsondata\r",
+									"var jsondata = pm.response.json()\r",
+									"\r",
+									"// Get the length of the parsed JSON array and store it in a variable\r",
+									"var lenght_of_list = jsondata.length;\r",
+									"\r",
+									"// Store the length of the list in a collection variable for later use\r",
+									"pm.collectionVariables.set(\"lenght_of_list\", lenght_of_list);\r",
+									"\r",
+									"// Log the length of the list to the console for debugging\r",
+									"console.log(lenght_of_list);\r",
+									"\r",
+									"// Calculate the index of the newly added contact, assuming it's the last one in the list\r",
+									"const index_of_new_contact = lenght_of_list - 1;\r",
+									"\r",
+									"// Test to verify the status code of the response is 200 (success)\r",
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"// Test to verify that the response time is within the acceptable limit (less than 1000 ms)\r",
+									"pm.test(\"Verifying the response is within the time limit\", () => {\r",
+									"    pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"// Test to verify the 'owner' field matches the 'User_id' stored in collection variables\r",
+									"pm.test(\"Verifying the id of the user\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].owner).is.equal(pm.collectionVariables.get(\"User_id\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the first name of the newly added contact matches the expected first name\r",
+									"pm.test(\"Verify that the first name of the added new contact is correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].firstName).is.equal(pm.collectionVariables.get(\"Fristname\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the last name of the newly added contact matches the expected last name\r",
+									"pm.test(\"Verify that the last name of the added new contact is correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].lastName).is.equal(pm.collectionVariables.get(\"Lastname\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the email and phone number of the newly added contact match the expected values\r",
+									"pm.test(\"Verify that the email and phone number of the added new contact are correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].email).is.equal(pm.collectionVariables.get(\"Useremail\"));\r",
+									"    pm.expect(jsondata[index_of_new_contact].phone).is.equal(pm.collectionVariables.get(\"phone_number\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the country of the newly added contact matches the expected country\r",
+									"pm.test(\"Verify that the country of the added new contact is correct\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact].country).is.equal(pm.collectionVariables.get(\"country\"));\r",
+									"});\r",
+									"\r",
+									"// Test to verify the customer ID (_id) of the last added contact matches the expected customer user ID\r",
+									"pm.test(\"Verifying the customer Id on the contact in the last\", () => {\r",
+									"    pm.expect(jsondata[index_of_new_contact]._id).is.equal(pm.collectionVariables.get(\"customer_user_id\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/contacts/",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"contacts",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/contacts/' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Endpoints without authorization",
+			"item": [
+				{
+					"name": "Create contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"// Test to verify the status code of the response is 401 (unauthrized)\r",
+									"pm.test(\"Verifying that the status code is 401\", () => {\r",
+									"    pm.expect(pm.response.code).eql(401);\r",
+									"});\r",
+									"\r",
+									"// Test to verify that the response time is within the acceptable limit (less than 1000 ms)\r",
+									"pm.test(\"Verifying the response is within the time limit\", () => {\r",
+									"    pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"{{$randomFirstName}}\",\r\n    \"lastName\": \"{{$randomLastName}}\",\r\n    \"birthdate\": \"1970-01-01\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"phone\": \"{{$randomPhoneNumber}}\",\r\n    \"street1\": \"1 Main St.\",\r\n    \"street2\": \"Apartment A\",\r\n    \"city\": \"Anytown\",\r\n    \"stateProvince\": \"KS\",\r\n    \"postalCode\": \"12345\",\r\n    \"country\": \"{{$randomCountry}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/contacts",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"contacts"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/contacts' \\\r\n--header 'Authorization: Bearer {{token}}' \\\r\n--data-raw '{\r\n    \"firstName\": \"John\",\r\n    \"lastName\": \"Doe\",\r\n    \"birthdate\": \"1970-01-01\",\r\n    \"email\": \"jdoe@fake.com\",\r\n    \"phone\": \"8005555555\",\r\n    \"street1\": \"1 Main St.\",\r\n    \"street2\": \"Apartment A\",\r\n    \"city\": \"Anytown\",\r\n    \"stateProvince\": \"KS\",\r\n    \"postalCode\": \"12345\",\r\n    \"country\": \"USA\"\r\n}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Verifying that the status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).eql(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Verifying the response is withing the time limit\", () => {\r",
+									"pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									"pm.collectionVariables.unset(\"Current_first_name\");\r",
+									"pm.collectionVariables.unset(\"Current_last_name\");\r",
+									"pm.collectionVariables.unset(\"Fristname\");\r",
+									"pm.collectionVariables.unset(\"Lastname\")\r",
+									"pm.collectionVariables.unset(\"User_id\")\r",
+									"pm.collectionVariables.unset(\"Useremail\")\r",
+									"pm.collectionVariables.unset(\"Current_first_name\")\r",
+									"pm.environment.unset(\"access_token\")\r",
+									"pm.collectionVariables.unset(\"country\")\r",
+									"pm.collectionVariables.unset(\"customer_user_id\")\r",
+									"pm.collectionVariables.unset(\"phone_number\")\r",
+									"pm.collectionVariables.unset(\"lenght_of_list\")"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/users/me",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"users",
+								"me"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request DELETE 'https://thinking-tester-contact-list.herokuapp.com/users/me' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get all contacts list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"// Test to verify the status code of the response is 401 (unauthrized)\r",
+									"pm.test(\"Verifying that the status code is 401\", () => {\r",
+									"    pm.expect(pm.response.code).eql(401);\r",
+									"});\r",
+									"\r",
+									"// Test to verify that the response time is within the acceptable limit (less than 1000 ms)\r",
+									"pm.test(\"Verifying the response is within the time limit\", () => {\r",
+									"    pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/contacts",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"contacts"
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/contacts' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Get contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"// Test to verify the status code of the response is 401 (unauthrized)\r",
+									"pm.test(\"Verifying that the status code is 401\", () => {\r",
+									"    pm.expect(pm.response.code).eql(401);\r",
+									"});\r",
+									"\r",
+									"// Test to verify that the response time is within the acceptable limit (less than 1000 ms)\r",
+									"pm.test(\"Verifying the response is within the time limit\", () => {\r",
+									"    pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{Base_url}}/contacts/",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"contacts",
+								""
+							]
+						},
+						"description": "Generated from cURL: curl --location 'https://thinking-tester-contact-list.herokuapp.com/contacts/' \\\r\n--header 'Authorization: Bearer {{token}}'"
+					},
+					"response": []
+				},
+				{
+					"name": "Update contacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"// Test to verify the status code of the response is 401 (unauthrized)\r",
+									"pm.test(\"Verifying that the status code is 401\", () => {\r",
+									"    pm.expect(pm.response.code).eql(401);\r",
+									"});\r",
+									"\r",
+									"// Test to verify that the response time is within the acceptable limit (less than 1000 ms)\r",
+									"pm.test(\"Verifying the response is within the time limit\", () => {\r",
+									"    pm.expect(pm.response.responseTime).is.lessThan(1000);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"firstName\": \"Anna\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{Base_url}}/contacts",
+							"host": [
+								"{{Base_url}}"
+							],
+							"path": [
+								"contacts"
+							]
+						},
+						"description": "Generated from cURL: curl --location --request PATCH 'https://thinking-tester-contact-list.herokuapp.com/contacts/' \\\r\n--header 'Authorization: Bearer {{token}}' \\\r\n--data '{\r\n    \"firstName\": \"Anna\"\r\n}'"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "city",
+			"value": ""
+		},
+		{
+			"key": "postalCode",
+			"value": ""
+		}
+	]
+}
